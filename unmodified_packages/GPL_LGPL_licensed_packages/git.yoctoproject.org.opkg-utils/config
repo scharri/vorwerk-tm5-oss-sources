@@ -1,0 +1,8 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = true
+[remote "origin"]
+	url = git://git.yoctoproject.org/opkg-utils
+	fetch = +refs/*:refs/*
+	mirror = true

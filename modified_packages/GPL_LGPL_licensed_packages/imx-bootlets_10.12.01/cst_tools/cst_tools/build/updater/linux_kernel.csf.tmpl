@@ -1,0 +1,30 @@
+[Header]
+    Version = 4.0
+    Hash Algorithm = sha256
+    Engine Configuration = 0
+    Certificate Format = X509
+    Signature Format = CMS
+
+[Install SRK]
+    File = "./SRK_1_2_3_4.table"
+    Source index = 0
+
+[Install CSFK]
+    File = "./crts/CSF1_1_sha256_2048_65537_v3_usr_crt.pem"
+
+[Authenticate CSF]
+
+[Install Key]
+    Verification index = 0
+    Target index = 2
+    File = "./crts/IMG1_1_sha256_2048_65537_v3_usr_crt.pem"
+
+# Sign entire linux_prep image
+# Sign entire zImage
+# Blocks have the following definition:
+# Base address of the binary file, Offset, Length of block in bytes
+[Authenticate Data]
+    Verification index = 2
+    Engine = DCP
+    Blocks = 0x00002000 0x0 {XXXX} "./updater/linux_kernel.bin", \
+             0x40008000 0x0 {YYYY} "./updater/zImage"

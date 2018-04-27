@@ -1,0 +1,67 @@
+// i.MX28 ROM command script to load and run Linux kernel
+
+options {
+    driveTag = 0x00;
+    flags = 0x01;
+}
+
+sources {
+    chooser_prep = "./chooser_prep";
+    chooser_prep_bin = "./chooser_prep.bin";
+    chooser_prep_hab_data = "./chooser_prep_hab_data";
+
+    power_prep = "./power_prep";
+    power_prep_bin = "./power_prep.bin";
+    power_prep_hab_data = "./power_prep_hab_data";
+
+    boot_prep = "./boot_prep";
+    boot_prep_bin = "./boot_prep.bin";
+    boot_prep_hab_data = "./boot_prep_hab_data";
+
+    linux_prep = "./linux_prep";
+    linux_prep_bin = "./linux_prep.bin";
+    linux_prep_hab_data = "./linux_prep_hab_data";
+    linux_kernel_hab_data = "./linux_kernel_hab_data";
+    zImage = "./zImage";
+}
+
+section (0) {
+    //----------------------------------------------------------
+    // Image Chooser initialization
+    //----------------------------------------------------------
+    load chooser_prep_bin > 0x10;
+    load chooser_prep;
+    load chooser_prep_hab_data > chooser_prep:__hab_data;
+    hab call chooser_prep:input_ivt;
+
+    //----------------------------------------------------------
+    // Power Supply initialization
+    //----------------------------------------------------------
+    load power_prep_bin > 0x10;
+    load power_prep;
+    load power_prep_hab_data > power_prep:__hab_data;
+    hab call power_prep:input_ivt;
+
+    //----------------------------------------------------------
+    // SDRAM initialization
+    //----------------------------------------------------------
+    load boot_prep_bin > 0x10;
+    load boot_prep;
+    load boot_prep_hab_data > boot_prep:__hab_data;
+    hab call boot_prep:input_ivt;
+
+    //----------------------------------------------------------
+    // Prepare to boot Linux
+    //----------------------------------------------------------
+    load linux_prep_bin > 0x2000;
+    load linux_prep;
+    load linux_prep_hab_data > linux_prep:__hab_data;
+    hab call linux_prep:input_ivt;
+
+    //----------------------------------------------------------
+    // Load and start Linux kernel
+    //----------------------------------------------------------
+    load zImage > 0x40008000;
+    load linux_kernel_hab_data > linux_prep:__hab_data;
+    hab jump linux_prep:input_ivt;
+}

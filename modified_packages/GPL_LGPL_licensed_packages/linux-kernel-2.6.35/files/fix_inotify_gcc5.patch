@@ -1,0 +1,17 @@
+--- a/include/linux/inotify.h	2015-12-01 18:50:36.258881302 +0100
++++ b/include/linux/inotify.h	2015-12-01 18:50:59.297879414 +0100
+@@ -230,12 +230,12 @@
+ {
+ }
+ 
+-extern inline int pin_inotify_watch(struct inotify_watch *watch)
++static inline int pin_inotify_watch(struct inotify_watch *watch)
+ {
+ 	return 0;
+ }
+ 
+-extern inline void unpin_inotify_watch(struct inotify_watch *watch)
++static inline void unpin_inotify_watch(struct inotify_watch *watch)
+ {
+ }
+ 

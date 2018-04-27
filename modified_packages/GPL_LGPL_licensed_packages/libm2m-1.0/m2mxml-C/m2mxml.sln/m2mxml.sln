@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "m2mxml.sln", "m2mxml.sln.vcproj", "{DF4691CD-87A6-43AD-A6A5-86713B86DF69}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DF4691CD-87A6-43AD-A6A5-86713B86DF69}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DF4691CD-87A6-43AD-A6A5-86713B86DF69}.Debug|Win32.Build.0 = Debug|Win32
+		{DF4691CD-87A6-43AD-A6A5-86713B86DF69}.Release|Win32.ActiveCfg = Release|Win32
+		{DF4691CD-87A6-43AD-A6A5-86713B86DF69}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

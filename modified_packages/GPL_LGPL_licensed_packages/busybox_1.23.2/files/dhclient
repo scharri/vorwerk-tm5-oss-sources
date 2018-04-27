@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# This script is a wrapper to use busybox dhcp client as a drop-in
+# replacement of ISC dhclient, at least from the wifimanager binary
+# point of view.
+#
+
+BUSYBOX_BIN="/bin/busybox"
+
+# Note busybox applet is renamed from udhcpc to dhclient
+# to cope with wifimanager "killall" approach
+# It is invoked with background option to avoid to quit
+# if IP is not acquired at startup
+BUSYBOX_UDHCPC_APPLET="/bin/dhclient -b"
+
+# Does wifimanager query the version ?
+if [ "x$1" == "x--version" ] ; then
+  $BUSYBOX_BIN | grep "BusyBox v"
+  exit 0
+fi
+
+# Otherwise let's launch dhcp client on passed interface
+$BUSYBOX_UDHCPC_APPLET -i $1

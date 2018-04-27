@@ -1,0 +1,12 @@
+--- a/include/linux/compiler-gcc5.h	2015-12-01 18:44:06.357913244 +0100
++++ b/include/linux/compiler-gcc5.h	2015-12-01 18:46:17.475902502 +0100
+@@ -2,6 +2,9 @@
+ #error "Please don't include <linux/compiler-gcc5.h> directly, include <linux/compiler.h> instead."
+ #endif
+ 
++/* Add old uninitialized_var macro which is required to build 2.6.35 */
++#define uninitialized_var(x) x = x
++
+ #define __used				__attribute__((__used__))
+ #define __must_check			__attribute__((warn_unused_result))
+ #define __compiler_offsetof(a, b)	__builtin_offsetof(a, b)

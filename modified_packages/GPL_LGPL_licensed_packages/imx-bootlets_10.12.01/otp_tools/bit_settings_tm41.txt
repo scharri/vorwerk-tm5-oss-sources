@@ -1,0 +1,219 @@
+# pragma statement that sets the chip family for which the file is setting bits.
+*chip-family-mx28*
+
+###################################################################
+# OTP registers
+# Bank 0 			Bank 1 				Bank 2 			Bank 3 			Bank 4 (i.MX28 only)
+# hw_ocotp_cust0 	hw_ocotp_hwcap0 	hw_ocotp_lock 	hw_ocotp_rom0 	hw_ocotp_srk0
+# hw_ocotp_cust1 	hw_ocotp_hwcap1 	hw_ocotp_ops0 	hw_ocotp_rom1 	hw_ocotp_srk1
+# hw_ocotp_cust2 	hw_ocotp_hwcap2 	hw_ocotp_ops1 	hw_ocotp_rom2 	hw_ocotp_srk2
+# hw_ocotp_cust3 	hw_ocotp_hwcap3 	hw_ocotp_ops2 	hw_ocotp_rom3 	hw_ocotp_srk3
+# hw_ocotp_crypto0 	hw_ocotp_hwcap4 	hw_ocotp_ops3 	hw_ocotp_rom4 	hw_ocotp_srk4
+# hw_ocotp_crypto1 	hw_ocotp_hwcap5 	hw_ocotp_un0 	hw_ocotp_rom5 	hw_ocotp_srk5
+# hw_ocotp_crypto2 	hw_ocotp_swcap 		hw_ocotp_un1 	hw_ocotp_rom6 	hw_ocotp_srk6
+# hw_ocotp_crypto3 	hw_ocotp_custcap 	hw_ocotp_un2 	hw_ocotp_rom7 	hw_ocotp_srk7
+
+# description and examples of command syntax
+
+# set whole customer registers to some values
+# example: hw_ocotp_cust0 = 0x10000
+# example: hw_ocotp_cust1 = 0x20000
+
+# setting part of a register
+# example: hw_ocotp_cust2[31:15] = 99999
+
+# you can also set just one bit.
+# example: hw_ocotp_cust2[0] = 1
+
+# set bit fields by name
+# example: use_alt_debug_uart_pins = yes
+###################################################################
+
+## -- BANK 0 -- ##
+
+# custom register will hold serial number from Panasonic + serial number of Thermomix device,
+# they will be already set independently
+# HW_OCOTP_CUST[0-3] registers
+hw_ocotp_cust0 = 0x00000000
+hw_ocotp_cust1 = 0x00000000
+hw_ocotp_cust2 = 0x00000000
+hw_ocotp_cust3 = 0x00000000
+
+# HW_OCOTP_CRYPTO[0-3] registers - set using the crypto key file (--key)
+
+## -- BANK 1 -- ##
+
+# HW_OCOTP_CUSTCAP register
+rtc_xtal_32768_present = false
+rtc_xtal_32000_present = false
+
+## -- BANK 3 -- ##
+
+# HW_OCOTP_ROM0 register
+
+# boot modes for i.MX28
+# boot_mode_usb (=0)
+# boot_mode_i2c_3v3
+# boot_mode_i2c_1v8
+# boot_mode_spi_flash_ssp2_3v3
+# boot_mode_spi_flash_ssp2_1v8
+# boot_mode_spi_flash_ssp3_3v3
+# boot_mode_spi_flash_ssp3_1v8
+# boot_mode_nand_3v3
+# boot_mode_nand_1v8
+# boot_mode_jtag_wait
+# boot_mode_spi_eeprom_ssp3_3v3
+# boot_mode_spi_eeprom_ssp3_1v8
+# boot_mode_sdmmc_ssp0_3v3
+# boot_mode_sdmmc_ssp0_1v8
+# boot_mode_sdmmc_ssp1_3v3
+# boot_mode_sdmmc_ssp1_1v8
+boot_mode = boot_mode_nand_3v3
+
+# sd_power_gate_gpio_pwm3 (=0)
+# sd_power_gate_gpio_pwm4
+# sd_power_gate_gpio_lcd_dotclk
+# sd_power_gate_gpio_no_gate
+sd_power_gate_gpio = sd_power_gate_gpio_pwm3
+
+# SD Power Up Delay - choices: 0-63 (for 0 to 630 mS)
+sd_power_up_delay = 0
+
+# sd_bus_width_4bit (=0)
+# sd_bus_width_1bit
+# sd_bus_width_8bit
+sd_bus_width = sd_bus_width_4bit
+
+# SSP SCK Index - choices: (need to list choices for this 4-bit field)
+ssp_sck_index = 0
+
+# Disable SPI NOR fast reads
+disable_spi_nor_fast_read = false
+
+# Enable USB Boot Serial Number
+enable_usb_boot_serial_num = false
+
+# Enable Unencrypted Boot: set to true if using an unencrypted image.
+# Using an unencrypted image is not recommended
+enable_unencrypted_boot = false
+
+# PSWITCH recovery mode via USB - not available
+disable_recovery_mode = false
+
+# Use Alternate (ROTARYA/B) Debug UART RX/TX pins
+use_alt_debug_uart_pins = false
+
+# MBR mode is 0, so if it's bad we can switch it to 01/10/11 if required
+sd_mmc_mode = sd_mmc_mode_mbr
+
+
+# HW_OCOTP_ROM1 register
+
+# For STMP377x/378x only. Reserved for all other derivatives
+# untouch_internal_ssp_pullup = 0
+
+# External SSP2 Pullups Used
+ssp2_ext_pullup = false
+
+# External SSP1 Pullups Used
+ssp1_ext_pullup = false
+
+# Increase SD Card Init Seq Time from 1 mS to 4mS
+sd_increase_init_seq_time = false
+
+# Enable Second Init Seq for SD Boot
+sd_init_seq_2_enable = false
+
+# Reset Command (Cmd0) Called During Startup
+sd_cmd0_disable = false
+
+# Disable First Init Seq for SD
+sd_init_seq_1_disable = false
+
+# Number of 64-page Blocks Searched by Bootloader - choices:
+# Set to n where range is 0-15.  Resulting number of blocks searched for valid BSB is 2^^n.
+# Recommended value to use is 3. Default is 2.
+boot_search_count = 3
+
+# distance in pages between two BCB data structures in a given search area.
+# Default (0) means also 1 (1 * 64 pages)
+boot_search_stride = 0
+
+# Number of NANDS - choices: 0-7 where 0 means that ROM will probe for NAND devices in system
+number_of_nands = 0
+
+
+# HW_OCOTP_ROM2 register
+
+# If these fields are changed, then a customized updater needs to be used.  Keep the default values for compatibility with standard updater and Manufacturing Tool.
+# USB Vendor ID used only in recovery mode.  If field is 0, then SigmaTel vendor ID is used
+usb_vid = 0
+# USB Product ID used only in recovery mode
+usb_pid = 0
+
+
+# HW_OCOTP_ROM7 register
+
+# disable also forced recovery (when ROM loader finds no images on flash)
+force_recovery_disable = true
+
+# cannot disable recovery completely, as it will disable also JTAG (needed in production process)
+# so we just limit it to boot from secured NAND instead
+recovery_boot_mode = boot_mode_nand_3v3
+
+# close HAB, so only HAB-signed images are allowed to run
+# hab_config_hab_fab 0
+# hab_config_hab_open 1
+# hab_config_hab_close 2
+hab_config = hab_config_hab_close
+
+
+## -- BANK 4 -- ##
+
+# HW_OCOTP_SRK[0-7] registers - set using the SRK key file (--srk)
+
+## -- BANK 2 -- ## THIS MUST BE LAST SECTION IN THIS FILE, AS THEY ARE LOCK BITS ##
+
+# HW_OCOTP_LOCK register
+
+# Lock customer registers
+lock_cust0 = false
+lock_cust1 = false
+lock_cust2 = false
+lock_cust3 = false
+
+# Lock CUSTCAP register
+lock_custcap = false
+lock_custcap_shadow = false
+# Lock HW/SW cap registers
+lock_hwsw = false
+lock_hwsw_shadow = false
+lock_hwsw_shadow_alt = false
+
+# Lock ROM registers
+# Customers who use encrypted images, either with the default key or with a custom key, 
+# should lock ROM0 so it cannot be burned in the field.  
+lock_rom0 = true
+lock_rom1 = true
+lock_rom2 = true
+lock_rom3 = true
+lock_rom4 = true
+lock_rom5 = true
+lock_rom6 = true
+lock_rom7 = true
+lock_rom_shadow = true
+
+# Lock crypto registers
+# If using the default key, ROM0 should be locked by setting the two bits below.
+# Be sure that all bits are set correctly in this register before locking it.
+lock_cryptokey = true
+lock_cryptokey_alt = true
+# For debug purposes, the DCP block provides a backdoor that allows the ARM core to read the OTP crypto key.  
+# This backdoor is disabled by setting these two bits in the OTP LOCK register.
+# Customers that use a custom key should add the following two lines to their settings file to lock these bits to disable the backdoor access.
+lock_cryptodcp = true
+lock_cryptodcp_alt = true
+
+# Lock SRK registers
+lock_srk = true
+lock_srk_shadow = true

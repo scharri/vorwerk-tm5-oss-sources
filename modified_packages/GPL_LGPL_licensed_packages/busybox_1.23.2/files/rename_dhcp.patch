@@ -1,0 +1,40 @@
+diff -Naur a/include/applets.src.h b/include/applets.src.h
+--- a/include/applets.src.h	2016-04-01 02:57:21.673214558 +0200
++++ b/include/applets.src.h	2016-04-02 05:16:33.788451981 +0200
+@@ -364,7 +364,7 @@
+ IF_TTYSIZE(APPLET(ttysize, BB_DIR_USR_BIN, BB_SUID_DROP))
+ IF_TUNCTL(APPLET(tunctl, BB_DIR_SBIN, BB_SUID_DROP))
+ IF_TUNE2FS(APPLET(tune2fs, BB_DIR_SBIN, BB_SUID_DROP))
+-IF_UDHCPC(APPLET(udhcpc, BB_DIR_SBIN, BB_SUID_DROP))
++IF_UDHCPC(APPLET(dhclient, BB_DIR_BIN, BB_SUID_DROP))
+ IF_UDHCPD(APPLET(udhcpd, BB_DIR_USR_SBIN, BB_SUID_DROP))
+ IF_UDPSVD(APPLET_ODDNAME(udpsvd, tcpudpsvd, BB_DIR_USR_BIN, BB_SUID_DROP, udpsvd))
+ IF_UMOUNT(APPLET(umount, BB_DIR_BIN, BB_SUID_DROP))
+diff -Naur a/networking/udhcp/dhcpc.c b/networking/udhcp/dhcpc.c
+--- a/networking/udhcp/dhcpc.c	2016-04-01 04:01:19.843900116 +0200
++++ b/networking/udhcp/dhcpc.c	2016-04-01 05:46:47.763381700 +0200
+@@ -1155,11 +1155,11 @@
+ //usage:#else
+ //usage:# define IF_UDHCP_VERBOSE(...)
+ //usage:#endif
+-//usage:#define udhcpc_trivial_usage
++//usage:#define dhclient_trivial_usage
+ //usage:       "[-fbq"IF_UDHCP_VERBOSE("v")"RB]"IF_FEATURE_UDHCPC_ARPING(" [-a[MSEC]]")" [-t N] [-T SEC] [-A SEC/-n]\n"
+ //usage:       "	[-i IFACE]"IF_FEATURE_UDHCP_PORT(" [-P PORT]")" [-s PROG] [-p PIDFILE]\n"
+ //usage:       "	[-oC] [-r IP] [-V VENDOR] [-F NAME] [-x OPT:VAL]... [-O OPT]..."
+-//usage:#define udhcpc_full_usage "\n"
++//usage:#define dhclient_full_usage "\n"
+ //usage:	IF_LONG_OPTS(
+ //usage:     "\n	-i,--interface IFACE	Interface to use (default eth0)"
+ //usage:	IF_FEATURE_UDHCP_PORT(
+@@ -1239,8 +1239,8 @@
+ //usage:     "\n	USR2	Release lease"
+ 
+ 
+-int udhcpc_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
+-int udhcpc_main(int argc UNUSED_PARAM, char **argv)
++int dhclient_main(int argc, char **argv) MAIN_EXTERNALLY_VISIBLE;
++int dhclient_main(int argc UNUSED_PARAM, char **argv)
+ {
+ 	uint8_t *message;
+ 	const char *str_V, *str_h, *str_F, *str_r;

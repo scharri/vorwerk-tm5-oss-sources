@@ -1,0 +1,57 @@
+<M2MXML ver="1.0"><Response resultCode="0" seq="0"/></M2MXML>
+<M2MXML ver="1.0"><Command name="setupTransducer" address="ain01"><Property name="type" value="analogIn"/><Property name="label" value="Analog In #1"/><Property name="units" value="units"/></Command><Command name="setupTransducer" address="aout01"><Property name="type" value="analogOut"/><Property name="label" value="Analog Out #1"/><Property name="units" value="units"/></Command><Command name="setupTransducer" address="din01"><Property name="type" value="digitialIn"/><Property name="label" value="Digital In #1"/><Property name="units" value="units"/></Command><Command name="setupTransducer" address="dout01"><Property name="type" value="digitialOut"/><Property name="label" value="Digital Out #1"/><Property name="units" value="units"/></Command><Command name="setupTransducer" address="sin01"><Property name="type" value="stringIn"/><Property name="label" value="String In #1"/><Property name="units" value="units"/></Command><Command name="setupTransducer" address="sout01"><Property name="type" value="stringOut"/><Property name="label" value="String Out #1"/><Property name="units" value="units"/></Command><Command name="setupTransducer" address="lin01"><Property name="type" value="locationIn"/><Property name="label" value="Location In #1"/><Property name="units" value="units"/></Command><Command name="setupTransducer" address="lout01"><Property name="type" value="locationOut"/><Property name="label" value="Location Out #1"/><Property name="units" value="units"/></Command></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="10"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="ain01" value="1" seq="20" entryType="1"/><Percept address="aout01" value="1" seq="20" entryType="1"/><Percept address="din01" value="1" perceptType="digital" seq="20" entryType="1"/><Percept address="sin01" value="sin01" perceptType="string" seq="20" entryType="1"/><Percept address="lin01" value="12.34,56.78" perceptType="location" seq="20" entryType="1"/><Response resultCode="0" seq="20"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="ain01" value="1" seq="30" entryType="1"/><Response resultCode="0" seq="30"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="aout01" value="1" seq="40" entryType="1"/><Response resultCode="0" seq="40"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="din01" value="1" perceptType="digital" seq="50" entryType="1"/><Response resultCode="0" seq="50"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="dout01" value="1" perceptType="digital" seq="60" entryType="1"/><Response resultCode="0" seq="60"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="sin01" value="sin01" perceptType="string" seq="70" entryType="1"/><Response resultCode="0" seq="70"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="sout01" value="sin01" perceptType="string" seq="80" entryType="1"/><Response resultCode="0" seq="80"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="lin01" value="12.34,56.78" perceptType="location" seq="90" entryType="1"/><Response resultCode="0" seq="90"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="lout01" value="12.34,56.78" perceptType="location" seq="100" entryType="1"/><Response resultCode="0" seq="100"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="110"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="120"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="130"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="140"/></M2MXML>
+<M2MXML ver="1.0"><Property name="low" value="0"/><Property name="high" value="1"/><Property name="lowlow" value="-2"/><Property name="highhigh" value="4"/><Response resultCode="0" seq="141"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="150"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="ain01" value="2.000000" entryType="2"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="160"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="170"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="ain01" value="5.000000" entryType="2"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="180"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="190"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="ain01" value="-1.000000" entryType="2"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="200"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="ain01" value="-3.000000" entryType="2"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="210"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="211"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="212"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="213"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="220"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="320"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="din01" value="1" perceptType="digital" entryType="2"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="330"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="340"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="350"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="din01" value="1" perceptType="digital" entryType="2"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="360"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="370"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="380"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="din01" value="0" perceptType="digital" entryType="2"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="390"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="400"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="410"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="420"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="425"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="430"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="ain01" value="10.000000" entryType="1"/><Percept address="aout01" value="10.000000" entryType="1"/><Percept address="din01" value="1" perceptType="digital" entryType="1"/><Percept address="sin01" value="sin01" perceptType="string" entryType="1"/><Percept address="lin01" value="12.34,56.78" perceptType="location" entryType="1"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="ain01" value="10.000000" entryType="1"/><Percept address="aout01" value="10.000000" entryType="1"/><Percept address="din01" value="1" perceptType="digital" entryType="1"/><Percept address="sin01" value="sin01" perceptType="string" entryType="1"/><Percept address="lin01" value="12.34,56.78" perceptType="location" entryType="1"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="440"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="450"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="455"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="460"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="ain01" value="10.000000" entryType="1"/></M2MXML>
+<M2MXML ver="1.0"><Percept address="ain01" value="10.000000" entryType="1"/></M2MXML>
+<M2MXML ver="1.0"><Response resultCode="0" seq="470"/></M2MXML>

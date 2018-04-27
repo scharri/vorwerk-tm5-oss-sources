@@ -1,0 +1,166 @@
+
+#
+r1 - ensure all messages are acknowledged
+#
+# - send full device definition to the portal
+#
+<M2MXML ver="1.0"><Command name="queryConfiguration" seq="0"><Property name="template"/></Command></M2MXML>
+a - behavior should fire to send "setupTransducer" commands to the portal
+#
+# - request transducer properties; set should be empty
+#
+<M2MXML ver="1.0"><Command name="queryConfiguration" address="ain01" seq="10"/></M2MXML>
+n
+#
+# - request percept from all, then each transducer
+#
+<M2MXML ver="1.0"><Command name="requestPercept" seq="20"/></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="requestPercept" seq="30" address="ain01"/></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="requestPercept" seq="40" address="aout01"/></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="requestPercept" seq="50" address="din01"/></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="requestPercept" seq="60" address="dout01"/></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="requestPercept" seq="70" address="sin01"/></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="requestPercept" seq="80" address="sout01"/></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="requestPercept" seq="90" address="lin01"/></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="requestPercept" seq="100" address="lout01"/></M2MXML>
+n
+#
+# - establiish out-of-bounds reporting properties; nothing should happen as 'ain01' is '1'
+#
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="110" address="ain01"><Property name="low" value="0"/></Command></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="120" address="ain01"><Property name="lowlow" value="-2"/></Command></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="130" address="ain01"><Property name="highhigh" value="4"/></Command></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="140" address="ain01"><Property name="high" value="1"/></Command></M2MXML>
+n
+#
+# - request transducer properties; set should include out-of-bounds properties
+#
+<M2MXML ver="1.0"><Command name="queryConfiguration" address="ain01" seq="141"/></M2MXML>
+n
+#
+# - trigger "high" exception report
+#
+<M2MXML ver="1.0"><Command name="setAnalogOutput" seq="150" address="aout01"><Property name="setPoint" value="2"/></Command></M2MXML>
+a - behavior should fire to send "Percept" message to the portal for "ain01" of "2"
+#
+# - avoid "highhigh" exception report
+#
+<M2MXML ver="1.0"><Command name="setAnalogOutput" seq="160" address="aout01"><Property name="setPoint" value="4"/></Command></M2MXML>
+n
+#
+# - trigger "highhigh" exception report
+#
+<M2MXML ver="1.0"><Command name="setAnalogOutput" seq="170" address="aout01"><Property name="setPoint" value="5"/></Command></M2MXML>
+a - behavior should fire to send "Percept" message to the portal for "ain01" of "5"
+#
+# - avoid "low" exception report
+#
+<M2MXML ver="1.0"><Command name="setAnalogOutput" seq="180" address="aout01"><Property name="setPoint" value="0"/></Command></M2MXML>
+n
+#
+# - trigger "low" exception report
+#
+<M2MXML ver="1.0"><Command name="setAnalogOutput" seq="190" address="aout01"><Property name="setPoint" value="-1"/></Command></M2MXML>
+a - behavior should fire to send "Percept" message to the portal for "ain01" of "-1"
+#
+# - trigger "lowlow" exception report
+#
+<M2MXML ver="1.0"><Command name="setAnalogOutput" seq="200" address="aout01"><Property name="setPoint" value="-3"/></Command></M2MXML>
+a - behavior should fire to send "Percept" message to the portal for "ain01" of "-3"
+#
+# - "turn off" (as the portal currently does) the out-of-bounds reporting
+#
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="210" address="ain01"><Property name="low" value="-32000.0"/></Command></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="211" address="ain01"><Property name="lowlow" value="-32000.0"/></Command></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="212" address="ain01"><Property name="highhigh" value="32000.0"/></Command></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="213" address="ain01"><Property name="high" value="32000.0"/></Command></M2MXML>
+n
+#
+# - ensure old triggers no longer occur; no report expected
+#
+<M2MXML ver="1.0"><Command name="setAnalogOutput" seq="220" address="aout01"><Property name="setPoint" value="10"/></Command></M2MXML>
+n
+#
+# - report digital in low/high transition
+#
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="320" address="din01"><Property name="alarmLevel" value="1"/></Command></M2MXML>
+a - behavior should trigger immediately
+#
+# - avoid exception by setting same value then going low
+#
+<M2MXML ver="1.0"><Command name="turnOn" seq="330" address="dout01"/></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="turnOff" seq="340" address="dout01"/></M2MXML>
+n
+#
+# - trigger exception
+#
+<M2MXML ver="1.0"><Command name="turnOn" seq="350" address="dout01"/></M2MXML>
+a - behavior should fire
+#
+# - report digital in low transition
+#
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="360" address="din01"><Property name="alarmLevel" value="2"/></Command></M2MXML>
+n
+#
+# - avoid exception by setting same value
+#
+<M2MXML ver="1.0"><Command name="turnOn" seq="370" address="dout01"/></M2MXML>
+n
+#
+# - trigger exception
+#
+<M2MXML ver="1.0"><Command name="turnOff" seq="380" address="dout01"/></M2MXML>
+a - behavior should fire
+#
+# - turn off transition
+#
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="390" address="din01"><Property name="alarmLevel" value="0"/></Command></M2MXML>
+n
+#
+# - verify nothing triggers exception
+#
+<M2MXML ver="1.0"><Command name="turnOn" seq="400" address="dout01"/></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="turnOn" seq="410" address="dout01"/></M2MXML>
+n
+#
+# - report all for after 1 minutes
+#
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="420"><Property name="reportallinterval.time" value="60"/></Command></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="425"><Property name="reportallinterval.start" value="0"/></Command></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="430"><Property name="reportallinterval.run" value="1"/></Command></M2MXML>
+a - should fire immediately
+w60 - should fire after 60 seconds
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="440"><Property name="reportallinterval.run" value="0"/></Command></M2MXML>
+n
+#
+# - report ain01 after 1 minute
+#
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="450" address="ain01"><Property name="ReportPtInterval.Time" value="60"/></Command></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="455" address="ain01"><Property name="ReportPtInterval.Start" value="0"/></Command></M2MXML>
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="460" address="ain01"><Property name="ReportPtInterval.Run" value="1"/></Command></M2MXML>
+a - should fire immediately
+w60 - should fire after 60 seconds
+n
+<M2MXML ver="1.0"><Command name="setConfiguration" seq="470" address="ain01"><Property name="ReportPtInterval.Run" value="0"/></Command></M2MXML>
+n

@@ -1,0 +1,60 @@
+diff -Naur a/lib/client.c b/lib/client.c
+--- a/lib/client.c	2016-01-26 16:10:28.203690552 +0100
++++ b/lib/client.c	2016-01-26 16:09:20.819696072 +0100
+@@ -396,8 +396,9 @@
+ 
+ 			lwsl_debug("Server connection %p (fd=%d) dead\n",
+ 				(void *)wsi, pollfd->fd);
+-
+-			goto bail3;
++			//patch CLO: 18-Jan-2016: do not bail in order to receive HTTP error code 
++			//goto bail3;
++			lwsl_warn("NOT bailing due LWS_POLLHUP in case LWS_CONNMODE_WS_CLIENT_WAITING_SERVER_REPLY\n");
+ 		}
+ 
+ 		if (!(pollfd->revents & LWS_POLLIN))
+@@ -804,7 +805,10 @@
+ 	return 0;
+ 
+ bail3:
+-	lws_free2(wsi->u.ws.rx_user_buffer);
++	if(!(wsi->protocol) || !isErrorCodeReceived || !p) {
++		//patch CLO: 18-Jan-2016: do not free the buffer before accessing it in callback below
++		lws_free2(wsi->u.ws.rx_user_buffer);
++	}
+ 	close_reason = LWS_CLOSE_STATUS_NOSTATUS;
+ 
+ bail2:
+@@ -813,6 +817,8 @@
+ 			wsi->protocol->callback(context, wsi,
+ 				LWS_CALLBACK_CLIENT_CONNECTION_ERROR,
+ 					wsi->user_space, p, (unsigned int)strlen(p));
++			//patch CLO: 18-Jan-2016: free the buffer after accessing it in callback since we did not free it above
++			lws_free2(wsi->u.ws.rx_user_buffer);
+ 		} else {
+ 			wsi->protocol->callback(context, wsi,
+ 				LWS_CALLBACK_CLIENT_CONNECTION_ERROR,
+diff -Naur a/lib/libwebsockets.h b/lib/libwebsockets.h
+--- a/lib/libwebsockets.h	2016-01-26 16:10:21.899691068 +0100
++++ b/lib/libwebsockets.h	2016-01-26 16:09:20.819696072 +0100
+@@ -40,7 +40,7 @@
+ #include <winsock2.h>
+ #include <ws2tcpip.h>
+ #include <stddef.h>
+-#include <stdint.h>
++//#include <stdint.h> commented out to fix compilability
+ #include <basetsd.h>
+ 
+ #define strcasecmp stricmp
+diff -Naur a/lib/private-libwebsockets.h b/lib/private-libwebsockets.h
+--- a/lib/private-libwebsockets.h	2016-01-26 16:10:16.571691505 +0100
++++ b/lib/private-libwebsockets.h	2016-01-26 16:09:20.819696072 +0100
+@@ -274,7 +274,7 @@
+ #endif
+ 
+ #define MAX_WEBSOCKET_04_KEY_LEN 128
+-#define LWS_MAX_SOCKET_IO_BUF 4096
++#define LWS_MAX_SOCKET_IO_BUF (256*1024)
+ 
+ #ifndef SYSTEM_RANDOM_FILEPATH
+ #define SYSTEM_RANDOM_FILEPATH "/dev/urandom"

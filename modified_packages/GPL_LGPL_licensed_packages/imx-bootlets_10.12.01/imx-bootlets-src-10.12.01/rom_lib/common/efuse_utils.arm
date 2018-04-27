@@ -1,0 +1,108 @@
+////////////////////////////////////////////////////////////////////////////////
+//! \addtogroup rom_common
+//! @{
+//
+// Copyright (c) 2006 SigmaTel, Inc.
+//
+//! \file   efuse_utils.arm
+//! \brief  Implements various efuse utilities.
+//!
+////////////////////////////////////////////////////////////////////////////////
+#include "regsdigctl.h"
+#include "efuse.h"
+#include "return_codes.h"
+
+    .section ".text","ax"
+    .align 4
+    .nothumb
+
+////////////////////////////////////////////////////////////////////////////////
+//!
+//! \brief load fuse data
+//!
+//! \fntype Function
+//!
+//! \post eFuse data ready for reading.
+//! \post eFuse banks are open, thus consuming power. 
+//! \see rom_otp_close_banks()
+////////////////////////////////////////////////////////////////////////////////
+ocotp_load_fuse_data::
+
+    // At 24mhz, it will take 33(HCLK cycles) x 41.6(ns) = 1.375 uS for eFuse
+    // data to load after RD_BANK_OPEN is set. Shadow registers (ONLY!) load out of
+    // deassertion of reset and that takes exactly the same amount of time.
+
+    // HW_OCOTP_CTRL[ERROR] does not affect opening the eFuse banks for reading.
+ 
+    // Set HW_OCOTP_CTRL[RD_BANK_OPEN]. This will kick the controller to put the 
+    // fuses into read mode. The controller will set HW_OCOTP_CTRL[BUSY] until the 
+    // eFuse contents are readable.. Note that if there was a pending write (holding BUSY) 
+    // and HW_OCOTP_CTRL[RD_BANK_OPEN] was set, the controller would complete the write 
+    // and immediately move into read operation (keeping BUSY set while the banks are being opened). 
+
+    ldr  r0, =HW_OCOTP_CTRL_SET_ADDR
+    ldr  r1, =BM_OCOTP_CTRL_RD_BANK_OPEN
+    str  r1, [r0]
+
+    // Poll for HW_OCOTP_CTRL[BUSY] clear. When HW_OCOTP_CTRL[BUSY] is clear and 
+    // HW_OCOTP_CTRL[RD_BANK_OPEN] is set, read the data from the appropriate memory mapped 
+    // address. Note that this is not necessary for registers which are shadowed.
+
+
+    // clear microseconds counter
+    ldr    r0, =HW_DIGCTL_MICROSECONDS_ADDR
+    mov    r1, #0
+    str    r1, [r0]
+
+    // setup timeout
+    mov    r2, #10  // set timeout to 10 microseconds
+
+.1: ldr    r0, =HW_OCOTP_CTRL_ADDR
+    ldr    r1, [r0]
+
+    // check BUSY bit
+    ldr    r3, =BM_OCOTP_CTRL_BUSY
+    ands   r1, r1, r3 
+    beq    .2  
+
+    // load current time and check for timeout
+    ldr    r0, =HW_DIGCTL_MICROSECONDS_ADDR
+    ldr    r0, [r0]
+    cmp    r0, r2
+    bgt    .1   // poll...
+
+    // set return code
+    ldrlt  r0, =ERROR_ROM  // we timed out...
+    b      .3
+.2: ldr    r0, =SUCCESS
+.3: bx     lr
+
+   .type ocotp_load_fuse_data,$function
+   .size ocotp_load_fuse_data,.-ocotp_load_fuse_data 
+
+////////////////////////////////////////////////////////////////////////////////
+//!
+//! \brief Close efuse banks
+//!
+//! \fntype Function
+//!
+//! \post Closed efuse banks - saves power drain.
+//! \post Non Shadowed banks no longer accessable.
+////////////////////////////////////////////////////////////////////////////////
+ocotp_close_banks::
+
+   ldr  r0, =HW_OCOTP_CTRL_CLR_ADDR
+   ldr  r1, =BM_OCOTP_CTRL_RD_BANK_OPEN
+   str  r1, [r0]
+
+   bx   lr
+
+   .type ocotp_close_banks,$function
+   .size ocotp_close_banks,.-ocotp_close_banks 
+
+
+////////////////////////////////////////////////////////////////////////////////
+// End of file
+////////////////////////////////////////////////////////////////////////////////
+//! @}
+

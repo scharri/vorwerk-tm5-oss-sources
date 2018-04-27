@@ -1,0 +1,24 @@
+Index: rpm/BUILD/linux-stable/kernel/ptrace.c
+===================================================================
+--- a/kernel/ptrace.c	(revision 120749)
++++ b/kernel/ptrace.c	(working copy)
+@@ -202,8 +202,18 @@
+ 		task->ptrace |= PT_PTRACE_CAP;
+ 
+ 	__ptrace_link(task, current);
+-	send_sig_info(SIGSTOP, SEND_SIG_FORCED, task);
++	//send_sig_info(SIGSTOP, SEND_SIG_FORCED, task);
+ 
++	/*
++ 	 * If doing coredump, just convert directly to TASK_TRACED.
++ 	 * A dying process doesn't process signals normally.
++	 */
++	if (unlikely(task->mm->core_state)) {
++		set_task_state(task, TASK_TRACED);
++	} else {
++		send_sig_info(SIGSTOP, SEND_SIG_FORCED, task);
++	}
++
+ 	retval = 0;
+ unlock_tasklist:
+ 	write_unlock_irq(&tasklist_lock);

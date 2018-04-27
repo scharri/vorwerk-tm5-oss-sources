@@ -1,0 +1,54 @@
+#!gbuild
+
+<!-- object definitions -->
+<project name="example"><description>
+Sample project with embedded configurations.
+</description></project>
+
+<property name="target" default="yes">engboard</property>
+
+<option name="hp">
+	<config name="CAPLESS" default="yes"/>
+	<config name="AC"/>
+</option>
+
+<option name="chip">
+	<config name="STMP3600" default="yes"/>
+	<config name="STMP3700"/>
+</option>
+
+<config name="MMC" default="yes"/>
+
+<config name="ETM"/>
+<require name="no_3700_etm">
+	<description>The STMP3700 does not support ETM.</description>
+	!(STMP3700 && ETM)
+</require>
+
+<config name="DEBUG"/>
+<define name="not_debug">!DEBUG</define>
+
+<!-- project contents starts here -->
+macro TARGET=target
+<STMP3600>macro CHIP=3600</STMP3600>
+<STMP3700>macro CHIP=3700</STMP3700>
+[Project]
+	-thumb
+	-thumb-lib
+<not_debug>
+	-gs
+	-Ospace
+</not_debug>
+<DEBUG>
+	-G
+	-Onone
+</DEBUG>
+<ETM>	-DBUILD_FOR_ETM</ETM>
+<AC>	-DHP=1</AC>
+<CAPLESS>	-DHP=2</CAPLESS>
+player.gpj		[Project]
+<MMC>
+	-DPLAYER_MMC
+</MMC>
+hostlink.gpj		[Project]
+updater.gpj		[Project]

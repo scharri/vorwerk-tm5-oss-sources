@@ -1,0 +1,50 @@
+// Copyright (c) 2008 SigmaTel, Inc.
+// 
+// SigmaTel, Inc.
+// Proprietary and Confidential
+// 
+// This source code and the algorithms implemented therein constitute
+// confidential information and may comprise trade secrets of SigmaTel, Inc.
+// or its associates, and any use thereof is subject to the terms and
+// conditions of the Confidential Disclosure Agreement pursuant to which this
+// source code was originally received.
+
+sources
+{
+    // ELF file for the OTP burning program.
+    burner = extern(0) (secinfoClear = "default");
+    
+    // Binary file containing OTP register data. Passed on the command line.
+    bits = extern(1);
+}
+
+constants
+{
+    // The unique ID for our OTP burning plugin.
+    plugin_id = 0x8003;
+    
+    // Load address for the IVT. Somewhere unused and out of the ROM keep-out region.
+    // This address must work for all supported chips, including the 3780 with the
+    // smallest OCRAM size of 32K. The pitc_otp_mfg programs currently only occupy
+    // from 0x400-0x2c94 in memory (for the slightly larger mx28 version).
+    ivt_addr = (16K - 32);
+}
+
+section (0)
+{
+    // Load the OTP burning program.
+    load burner;
+    
+    // Overwrite the OTP bit data array in memory with the contents of
+    // the bits binary source file.
+    load bits > burner:g_au32OtpRegWriteData;
+    
+    // Invoke the plugin's entry point and pass it the ID we want to use.
+    // This function will return ROM_BOOT_IMAGE_ID, causing the loader to
+    // restart instead of hitting the end of this section.
+    load ivt (entry = burner:pitc_entry) > ivt_addr;
+    hab call ivt_addr (plugin_id);
+}
+
+
+

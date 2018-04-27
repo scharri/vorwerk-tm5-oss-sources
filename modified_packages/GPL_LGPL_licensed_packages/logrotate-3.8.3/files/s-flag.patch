@@ -1,0 +1,103 @@
+Only in logrotate: .svn
+diff -crB logrotate-3.8.3/config.c logrotate/config.c
+*** logrotate-3.8.3/config.c	Thu Oct  4 09:59:14 2012
+--- logrotate/config.c	Thu Aug 11 15:55:03 2016
+***************
+*** 1,3 ****
+--- 1,8 ----
++ /*
++  *   Modified by: Volker Greive
++  *
++  *   Adaptations for TM5.
++  */
+  #include <sys/queue.h>
+  /* Alloca is defined in stdlib.h in NetBSD */
+  #ifndef __NetBSD__
+***************
+*** 652,662 ****
+  	return 0;
+      }
+      
+! 	if (!(pw = getpwuid(getuid()))) {
+  		message(MESS_ERROR, "Logrotate UID is not in passwd file.\n");
+  		return 1;
+  	}
+! 
+  	if (getuid() == ROOT_UID) {
+  		if ((sb.st_mode & 07533) != 0400) {
+  			message(MESS_DEBUG,
+--- 657,667 ----
+  	return 0;
+      }
+      
+! /*	if (!(pw = getpwuid(getuid()))) {
+  		message(MESS_ERROR, "Logrotate UID is not in passwd file.\n");
+  		return 1;
+  	}
+! */
+  	if (getuid() == ROOT_UID) {
+  		if ((sb.st_mode & 07533) != 0400) {
+  			message(MESS_DEBUG,
+***************
+*** 666,679 ****
+  			return 0;
+  		}
+  
+! 		if ((pw = getpwnam("root")) == NULL) {
+  			message(MESS_DEBUG,
+  				"Ignoring %s because there's no password entry for the owner.\n",
+  				configFile);
+  			close(fd);
+  			return 0;
+  		}
+! 
+  		if (sb.st_uid != ROOT_UID && (pw == NULL ||
+  				sb.st_uid != pw->pw_uid ||
+  				strcmp("root", pw->pw_name) != 0)) {
+--- 671,684 ----
+  			return 0;
+  		}
+  
+! /*		if ((pw = getpwnam("root")) == NULL) {
+  			message(MESS_DEBUG,
+  				"Ignoring %s because there's no password entry for the owner.\n",
+  				configFile);
+  			close(fd);
+  			return 0;
+  		}
+! */
+  		if (sb.st_uid != ROOT_UID && (pw == NULL ||
+  				sb.st_uid != pw->pw_uid ||
+  				strcmp("root", pw->pw_name) != 0)) {
+diff -crB logrotate-3.8.3/logrotate.c logrotate/logrotate.c
+*** logrotate-3.8.3/logrotate.c	Thu Oct  4 09:59:14 2012
+--- logrotate/logrotate.c	Thu Aug 11 15:55:03 2016
+***************
+*** 1,3 ****
+--- 1,8 ----
++ /*
++  *   Modified by: Volker Greive
++  *
++  *   Adaptations for TM5.
++  */
+  #include <sys/queue.h>
+  /* alloca() is defined in stdlib.h in NetBSD */
+  #ifndef __NetBSD__
+***************
+*** 1832,1838 ****
+  	}
+  
+  	/* Hack to hide earlier bug */
+! 	if ((year != 1900) && (year < 1996 || year > 2100)) {
+  	    message(MESS_ERROR,
+  		    "bad year %d for file %s in state file %s\n", year,
+  		    argv[0], stateFilename);
+--- 1837,1844 ----
+  	}
+  
+  	/* Hack to hide earlier bug */
+! //	if ((year != 1900) && (year < 1996 || year > 2100)) {
+! 	if ((year != 1900) && (year < 1970 || year > 2100)) {
+  	    message(MESS_ERROR,
+  		    "bad year %d for file %s in state file %s\n", year,
+  		    argv[0], stateFilename);

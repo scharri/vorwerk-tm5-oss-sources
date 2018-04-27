@@ -1,0 +1,12 @@
+#!gbuild
+<!-- object definitions -->
+<element>
+</element>
+<singleton/>
+<project name="example"><description>
+Sample project with embedded configurations.
+</description></project>
+macro FOO=bar
+<config name="test \"" attr="yes"/>
+[Project]
+file.c

@@ -1,0 +1,450 @@
+////////////////////////////////////////////////////////////////////////////////
+//! \addtogroup rom_common
+//! @{
+//
+// Copyright (c) 2006 SigmaTel, Inc.
+//
+//! \file cpu_support.arm
+//! \brief ARM 926 support functions
+//!
+//! \see ARM Architecture Reference Manual - Second edition
+////////////////////////////////////////////////////////////////////////////////
+
+    .file    "cpu_support.arm"
+	.text
+    .nothumb
+    .align 4
+
+////////////////////////////////////////////////////////////////////////////////
+//!
+//!     \brief       Enable or disable the IRQ Interrupt.
+//!
+//!     \fntype:     Non-reentrant.
+//!
+//!     Description  Enable or disable the IRQ Interrupt.
+//!
+//!     \param[in]	 bool r0 holds the enable/disable flag (true = enable)
+//!
+//!     \retval      bool previous state of IRQ Interrupt.
+//!
+//!     Notes:
+//!
+////////////////////////////////////////////////////////////////////////////////
+cpu_EnableIrqInterrupt::
+    MRS     r2,CPSR            ;Save Current Program Status Register.
+    teq     r0,#0
+    bicNE   r1,r2,#0x80        ;Disable IRQ if clear
+    orrEQ   r1,r2,#0x80        ;Enable IRQ if set.
+    MSR     CPSR_c,r1
+    tst     r2,#0x80
+    movne   r0,#0
+    moveq   r0,#1
+    bx      lr
+
+    .type  cpu_EnableIrqInterrupt,$function
+    .size  cpu_EnableIrqInterrupt,.-cpu_EnableIrqInterrupt 
+
+
+////////////////////////////////////////////////////////////////////////////////
+//!
+//!     \brief       Enable or disable the FIQ Interrupt.
+//!
+//!     \fntype:     Non-reentrant.
+//!
+//!     Description  Enable or disable the FIQ Interrupt.
+//!
+//!     \param[in]	 bool r0 holds the enable/disable flag (true = enable)
+//!
+//!     \retval      bool previous state of FIQ Interrupt.
+//!
+//!     Notes:
+//!
+////////////////////////////////////////////////////////////////////////////////
+cpu_EnableFiqInterrupt::
+    MRS     r2,CPSR            ;Save Current Program Status Register.
+    teq     r0,#0
+    bicNE   r1,r2,#0x40        ;Disable FIQ if clear.
+    orrEQ   r1,r2,#0x40        ;Enable FIQ if set.
+    MSR     CPSR_c,r1
+    tst     r2,#0x40
+    movne   r0,#0
+    moveq   r0,#1
+    bx      lr
+
+    .type  cpu_EnableFiqInterrupt,$function
+    .size  cpu_EnableFiqInterrupt,.-cpu_EnableFiqInterrupt 
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!   \brief Invalidate ARM926 Instruction and Data TLBs
+//!
+//!   \fntype Non-reentrant Function
+//!
+//!   \note   REGS USED: r0
+//!
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+cpu_invalidate_TLBs::
+
+     mov     r0, #0
+     mcr     p15, 0, r0, c8, c7, 0
+
+     bx    lr
+
+    .type  cpu_invalidate_TLBs,$function
+    .size  cpu_invalidate_TLBs,.-cpu_invalidate_TLBs
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!   \brief  Invalidate entire ARM926 Instruction TLB
+//!
+//!   \fntype Non-reentrant Function
+//!
+//!   \note REGS USED: r0
+//!
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+cpu_invalidate_ITLB::
+
+     mov     r0, #0
+     mcr     p15, 0, r0, c8, c5, 0
+
+     bx    lr
+
+    .type  cpu_invalidate_ITLB,$function
+    .size  cpu_invalidate_ITLB,.-cpu_invalidate_ITLB
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!   \brief Invalidate single ARM926 Instruction TLB entry
+//!
+//!   \fntype Non-reentrant Function
+//!
+//!   \param[in] r0 = MVA of entry to be invalidated
+//!
+//!   \note REGS USED: r0
+//!
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+cpu_invalidate_ITLB_entry::
+
+    mcr     p15, 0, r0, c8, c5, 1
+
+    bx      lr
+
+    .type  cpu_invalidate_ITLB_entry,$function
+    .size  cpu_invalidate_ITLB_entry,.-cpu_invalidate_ITLB_entry
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!   \brief  Invalidate entire ARM926 Instruction Cache
+//!
+//!   \fntype Non-reentrant Function
+//!
+//!   \note   REGS USED: r0
+//!
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+cpu_invalidate_ICache::
+
+     mov   r0, #0
+     mcr   p15, 0, r0, c7, c5, 0
+     bx    lr
+
+    .type  cpu_invalidate_ICache,$function
+    .size  cpu_invalidate_ICache,.-cpu_invalidate_ICache
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!   \brief  Invalidate single ARM926 Instruction Cache entry per MVA
+//!
+//!   \fntype Non-reentrant Function
+//!
+//!   \param[in] r0 = MVA to invalidate
+//!
+//!   \note   REGS USED: r0
+//!
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+cpu_invalidate_ICache_MVA::
+
+     mcr   p15, 0, r0, c7, c5, 1
+     bx    lr
+
+    .type  cpu_invalidate_ICache_MVA,$function
+    .size  cpu_invalidate_ICache_MVA,.-cpu_invalidate_ICache_MVA
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!   \brief  Returns the ARM926 CP15 Control Register
+//!
+//!   \fntype: Nonreentrant Function
+//!
+//!   \retval r0 = CP15 reg 1
+//!
+//!   Notes:
+//!
+//!   ARM DDI0198D recommends access to this register be RMW
+//!
+//!
+//!   31                 19  18 17 16 15 14 13 12 11 10 9 8 7 6  3 2 1 0
+//!   -------------------------------------------------------------------
+//!   |                     |S |S |S |  |  |  |  |     | | | |    | | | |
+//!   |      SBZ            |B |B |B |L |R |V |I | SBZ |R|S|B|SBO |C|A|M|
+//!   |                     |O |Z |O |4 |R |  |  |     | | | |    | | | |
+//!   -------------------------------------------------------------------
+//!
+//!   Bits 31:19           Reserved (SBZ)
+//!   Bit18                Reserved (SBO)
+//!   Bit17                Reserved (SBZ)
+//!   Bit16                Reserved (SBO)
+//!   Bit15       L4 bit   Determines if T bit is set when load instructions
+//!                        change the PC. (0=set T bit, 1=do not set T bit(ARMv4 behaviour)
+//!   Bit14       RR bit   Cache Replacement Strategy (0=random, 1=Round Robin)
+//!   Bit13        V bit   Location of exception vectors (0=0x0,1=0xffff0000)
+//!                        (reset value depends upon VINITHI pin)
+//!   Bit12        I bit   I Cache Enable (0=disable,1=enable)
+//!   11:10                Reserved (SBZ)
+//!   Bit9         R bit   ROM Protection bit
+//!   Bit8         S bit   System Protection bit
+//!   Bit7         B bit   Endianess (0=little,1=big)
+//!                        (reset value depends upon BIGENDINIT pin)
+//!   Bits 6:3             Reserved (SBO)
+//!   Bit2         C bit   D Cache Enable (0=disable,1=enable)
+//!   Bit1         A bit   Data Alignment fault enable (0=disable,1=enable)
+//!   Bit0         M bit   MMU enable (0=disable,1=enable)
+//!
+//!
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+cpu_get_CP15_control_reg_1::
+
+    mrc   p15, 0, r0, c1, c0, 0
+
+    bx    lr
+
+    .type  cpu_get_CP15_control_reg_1,$function
+    .size  cpu_get_CP15_control_reg_1,.-cpu_get_CP15_control_reg_1
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!   \brief   Modifies ARM926 CP15 Control Register
+//!
+//!   \fntype: Non-reentrant Function
+//!
+//!   \param[in]  r0 = Mask of CP15 reg1 bit positions
+//!
+//!   Notes:
+//!
+//!   NOTE: ARM DDI0198D recommends access to this register be RMW
+//!
+//!   IMPORTANT NOTE: This function will enforce the Reserved bits
+//!                   to their required values (i.e. it will ignore
+//!                   input bit values for these reserved bits)
+//!
+//!   31                 19  18 17 16 15 14 13 12 11 10 9 8 7 6  3 2 1 0
+//!   -------------------------------------------------------------------
+//!   |                     |S |S |S |  |  |  |  |     | | | |    | | | |
+//!   |      SBZ            |B |B |B |L |R |V |I | SBZ |R|S|B|SBO |C|A|M|
+//!   |                     |O |Z |O |4 |R |  |  |     | | | |    | | | |
+//!   -------------------------------------------------------------------
+//!
+//!   Bits 31:19           Reserved (SBZ)
+//!   Bit18                Reserved (SBO)
+//!   Bit17                Reserved (SBZ)
+//!   Bit16                Reserved (SBO)
+//!   Bit15       L4 bit   Determines if T bit is set when load instructions
+//!                        change the PC. (0=set T bit, 1=do not set T bit(ARMv4 behaviour)
+//!   Bit14       RR bit   Cache Replacement Strategy (0=random, 1=Round Robin)
+//!   Bit13        V bit   Location of exception vectors (0=0x0,1=0xffff0000)
+//!                        (reset value depends upon VINITHI pin)
+//!   Bit12        I bit   I Cache Enable (0=disable,1=enable)
+//!   11:10                Reserved (SBZ)
+//!   Bit9         R bit   ROM Protection bit
+//!   Bit8         S bit   System Protection bit
+//!   Bit7         B bit   Endianess (0=little,1=big)
+//!                        (reset value depends upon BIGENDINIT pin)
+//!   Bits 6:3             Reserved (SBO)
+//!   Bit2         C bit   D Cache Enable (0=disable,1=enable)
+//!   Bit1         A bit   Data Alignment fault enable (0=disable,1=enable)
+//!   Bit0         M bit   MMU enable (0=disable,1=enable)
+//!
+//!
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+cpu_set_CP15_control_reg_1::
+
+
+       ldr    r1, =0x0005F3FF        ; make sure SBZ bits are SBZ
+       and    r0, r0, r1
+
+       ldr    r1, =0x00050078        ; make sure SBO bits are SBO
+       orr    r0, r0, r1
+
+
+       mcr    p15, 0, r0, c1, c0, 0  ; OK, change CP15 Reg 1
+
+       bx     lr
+
+       .type  cpu_set_CP15_control_reg_1,$function
+       .size  cpu_set_CP15_control_reg_1,.-cpu_set_CP15_control_reg_1
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//!
+//!   \brief  Returns the ARM926 CPSR register
+//!
+//!   \fntype: Nonreentrant Function
+//!
+//!   \retval r0 = CPSR
+//!
+////////////////////////////////////////////////////////////////////////////////
+cpu_get_CPSR::
+       mrs    r0, CPSR                        # Pickup the CPSR
+       bx     lr
+
+    .type  cpu_get_CPSR,$function
+    .size  cpu_get_CPSR,.-cpu_get_CPSR
+
+
+////////////////////////////////////////////////////////////////////////////////
+//! \brief cpu_invalidate_DCache , invalidate the d-cache
+//!
+//! \fntype Function
+//!
+//! \post all the d-cache lines are invalidated (but only when D-cache is enabled)
+//!
+//! \note Register Usage: n/a
+////////////////////////////////////////////////////////////////////////////////
+cpu_invalidate_DCache::
+    stmfd   sp!, {r0,lr}        ;push register onto stack
+
+    ; check if DCache is not enabled, if yes, directly exit
+    mrc     p15, 0, r0, c1, c0, 0    ; read CP15 register 1 into r0
+    ands    r0, r0, #(1 << 2)         ; check if DCache is enabled
+    beq     dcache_invalidate_exit   ; exit if DCache is already disabled
+
+    mov    r0,#0
+    ; invalidate d-cache 
+    mcr    p15,0,r0,c7,c6,0    
+
+dcache_invalidate_exit  
+    ldmfd   sp!, {r0,lr}
+    bx    lr
+
+    .type  cpu_invalidate_DCache,$function
+    .size  cpu_invalidate_DCache,.-cpu_invalidate_DCache
+
+////////////////////////////////////////////////////////////////////////////////
+//!
+//!   \brief  Invalidate ARM926 data cache by line (MVA)
+//!
+//!   \fntype Non-reentrant Function
+//!
+//!   \param[in] r0 = the virtual address in DCache to be invalidated
+//!   \param[in] r1 = the size in byte to be invalidated
+//!   \note   This equivalent to void 
+//!   invalidate_dcache_by_line(unsigned int addr, unsigned int len)
+//!           REGS MODIFIED: r2, r3
+//!
+//!
+////////////////////////////////////////////////////////////////////////////////
+invalidate_dcache_by_line::
+    stmfd   sp!, {r2, r3, lr}        ;push register onto stack
+     bic   r2, r0, #0x1f            ; r2=cache line aligned starting addr
+     add   r3, r0, r1
+ 
+invalidate_dcache_by_line_continue     
+     mcr   p15, 0, r2, c7, c6, 1    ; invliadte by line
+     add   r2, r2, #32
+     cmp   r2, r3
+     blo   invalidate_dcache_by_line_continue
+     ldmfd   sp!, {r2, r3, lr}
+ 
+     bx    lr
+ 
+    .type  invalidate_dcache_by_line,$function
+    .size  invalidate_dcache_by_line,.-invalidate_dcache_by_line
+
+////////////////////////////////////////////////////////////////////////////////
+//! \brief cpu_mmu_enable
+//!
+//! \fntype Function
+//!
+//! \post n/a
+//!
+//! \note Register Usage: r0,lr
+////////////////////////////////////////////////////////////////////////////////
+// before enabling MMU, the page table must be ready
+cpu_mmu_enable::
+    stmfd   sp!, {r0,lr}        ;push register onto stack
+        
+    mov     r0, #0
+    mcr     p15, 0, r0, c7, c7, 0       ; invalidate caches
+    mcr     p15, 0, r0, c8, c7, 0       ; invalidate TLBs
+
+    ; set into ttb register
+    ldr     r0,=0x1C000                 ; use OCRAM first 16kB as L1PT, not DFLPT 0x800c0000                        
+    mcr     p15,0,r0,c2,c0,0  
+    
+    ; set domain access permission
+    ldr     r0,=0x00000005                  ; client
+    mcr     p15,0,r0,c3,c0,0    
+    
+    ; enable the MMU and caches, 
+    mrc     p15, 0, r0, c1, c0, 0           ; read CP15 register 1 into r0
+    orr     r0, r0, #(1 << 2)                ; enable D Cache
+    orr     r0, r0, #(1 << 0)                ; enable MMU  
+    
+    mcr     p15, 0, r0, c1, c0, 0           ; write CP15 register 1
+    mov     r0, r0                          ; add several dummy ops after mmu enable
+    mov     r0, r0
+    mov     r0, r0
+    mov     r0, r0
+
+    ldmfd   sp!, {r0,lr}
+    bx    lr
+
+    .type  cpu_mmu_enable,$function
+    .size  cpu_mmu_enable,.-cpu_mmu_enable
+////////////////////////////////////////////////////////////////////////////////
+//! \brief cpu_mmu_disable
+//!
+//! \fntype Function
+//!
+//! \post n/a
+//!
+//! \note Register Usage: n/a
+////////////////////////////////////////////////////////////////////////////////
+cpu_mmu_disable::
+    stmfd   sp!, {r0,lr}        ;push register onto stack
+
+    ; check if MMU is not enabled, if yes, directly exit
+    mrc     p15, 0, r0, c1, c0, 0   ; read CP15 register 1 into r0
+    ands    r0, r0, #0x1            ; check if MMU is enabled
+    beq     mmu_disable_done        ; exit if MMU is already disabled
+    
+    ; Disable caches, MMU  
+    mrc     p15, 0, r0, c1, c0, 0           ; read CP15 register 1 into r0
+    bic     r0, r0, #0x5                    ; disable D Cache, MMU off
+
+    mcr     p15, 0, r0, c1, c0, 0           ; write CP15 register 1
+    mov     r0, r0
+    mov     r0, r0
+    mov     r0, r0
+    mov     r0, r0
+      
+
+mmu_disable_done  
+    ldmfd   sp!, {r0,lr}
+    bx    lr
+
+    .type  cpu_mmu_disable,$function
+    .size  cpu_mmu_disable,.-cpu_mmu_disable
+////////////////////////////////////////////////////////////////////////////////
+// End of file
+////////////////////////////////////////////////////////////////////////////////
+//! @}
+

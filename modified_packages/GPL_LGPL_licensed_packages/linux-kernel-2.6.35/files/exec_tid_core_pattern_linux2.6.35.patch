@@ -1,0 +1,27 @@
+Index: rpm/BUILD/linux-stable/fs/exec.c
+===================================================================
+--- a/fs/exec.c	(revision 123743)
++++ b/fs/exec.c	(working copy)
+@@ -1519,6 +1519,22 @@ static int format_corename(char *corenam
+ 					goto out;
+ 				out_ptr += rc;
+ 				break;
++			/* tid, virtual id in the namespace of current PID */
++			case 'i':
++				rc = snprintf(out_ptr, out_end - out_ptr,
++					      "%d", task_pid_vnr(current));
++				if (rc > out_end - out_ptr)
++					goto out;
++				out_ptr += rc;
++				break;
++			/* tid as globally seen from init process POV */
++			case 'I':
++				rc = snprintf(out_ptr, out_end - out_ptr,
++					      "%d", task_pid_nr(current));
++				if (rc > out_end - out_ptr)
++					goto out;
++				out_ptr += rc;
++				break;                          
+ 			/* uid */
+ 			case 'u':
+ 				rc = snprintf(out_ptr, out_end - out_ptr,

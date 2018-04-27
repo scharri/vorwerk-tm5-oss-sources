@@ -1,0 +1,271 @@
+Index: a/drivers/net/wireless/marvell/w8782/mlan/mlan_11n_rxreorder.c
+===================================================================
+--- a/drivers/net/wireless/marvell/w8782/mlan/mlan_11n_rxreorder.c	(revision 129896)
++++ b/drivers/net/wireless/marvell/w8782/mlan/mlan_11n_rxreorder.c	(working copy)
+@@ -393,6 +393,9 @@
+ 
+         util_init_list((pmlan_linked_list) new_node);
+         new_node->tid = tid;
++        new_node->init_win = seq_num;
++        new_node->flags = 0;
++
+         memcpy(pmadapter, new_node->ta, ta, MLAN_MAC_ADDR_LENGTH);
+         new_node->start_win = seq_num;
+         if (queuing_ra_based(priv)) {
+@@ -406,11 +409,8 @@
+         } else {
+             last_seq = priv->rx_seq[tid];
+         }
+-        if ((last_seq != DEFAULT_SEQ_NUM) && (last_seq >= new_node->start_win)) {
+-            PRINTM(MDAT_D, "Update start_win: last_seq=%d, start_win=%d\n",
+-                   last_seq, new_node->start_win);
+-            new_node->start_win = last_seq + 1;
+-        }
++
++        new_node->flags |= RXREOR_INIT_WINDOW_SHIFT;
+         new_node->win_size = win_size;
+ 
+         if (pmadapter->callbacks.
+@@ -650,6 +650,7 @@
+     int prev_start_win, start_win, end_win, win_size;
+     mlan_status ret = MLAN_STATUS_SUCCESS;
+     pmlan_adapter pmadapter = ((mlan_private *) priv)->adapter;
++    t_u8 init_window_shift = MFALSE;
+ 
+     ENTER();
+ 
+@@ -671,6 +672,10 @@
+         prev_start_win = start_win = rx_reor_tbl_ptr->start_win;
+         win_size = rx_reor_tbl_ptr->win_size;
+         end_win = ((start_win + win_size) - 1) & (MAX_TID_VALUE - 1);
++        if (rx_reor_tbl_ptr->flags & RXREOR_INIT_WINDOW_SHIFT) {
++                 init_window_shift = MTRUE;
++                 rx_reor_tbl_ptr->flags &= ~RXREOR_INIT_WINDOW_SHIFT;
++        }
+ 
+         PRINTM(MDAT_D,
+                "TID %d, TA %02x:%02x:%02x:%02x:%02x:%02x\n",
+@@ -678,23 +683,40 @@
+         PRINTM(MDAT_D,
+                "1:seq_num %d start_win %d win_size %d end_win %d\n",
+                seq_num, start_win, win_size, end_win);
+-        /* 
++        /*
+          * If seq_num is less then starting win then ignore and drop
+          * the packet
+          */
+-        if ((start_win + TWOPOW11) > (MAX_TID_VALUE - 1)) {     /* Wrap */
+-            if (seq_num >= ((start_win + (TWOPOW11)) &
+-                            (MAX_TID_VALUE - 1)) && (seq_num < start_win)) {
++         if (rx_reor_tbl_ptr->flags & RXREOR_FORCE_NO_DROP) {
++             PRINTM(MDAT_D, "Force no drop packet after HS_ACTIVED\n");
++             rx_reor_tbl_ptr->flags &= ~RXREOR_FORCE_NO_DROP;
++         } else if (init_window_shift && seq_num != start_win) {
++             if (seq_num < start_win || seq_num > end_win) {
++                rx_reor_tbl_ptr->flags |= RXREOR_INIT_WINDOW_SHIFT;
++                if (pkt_type != PKT_TYPE_BAR)
++                    wlan_11n_dispatch_pkt(priv, payload);
++
++                LEAVE();
++                return ret;
++             } else {
++                rx_reor_tbl_ptr->start_win = prev_start_win = start_win = seq_num;
++                end_win = ((start_win + win_size) - 1) & (MAX_TID_VALUE - 1);
++             }
++         } else {
++            if ((start_win + TWOPOW11) > (MAX_TID_VALUE - 1)) {     /* Wrap */
++                if (seq_num >= ((start_win + (TWOPOW11)) &
++                                (MAX_TID_VALUE - 1)) && (seq_num < start_win)) {
++                    ret = MLAN_STATUS_FAILURE;
++                    goto done;
++                }
++            } else if ((seq_num < start_win) ||
++                       (seq_num > (start_win + (TWOPOW11)))) {
+                 ret = MLAN_STATUS_FAILURE;
+                 goto done;
+             }
+-        } else if ((seq_num < start_win) ||
+-                   (seq_num > (start_win + (TWOPOW11)))) {
+-            ret = MLAN_STATUS_FAILURE;
+-            goto done;
+         }
+ 
+-        /* 
++        /*
+          * If this packet is a BAR we adjust seq_num as
+          * WinStart = seq_num
+          */
+@@ -1015,14 +1037,40 @@
+     return;
+ }
+ 
++
+ /**
+- *  @brief This function will send a DELBA for each entry in the priv's
+- *          rx reordering table
+- *  
++ *  @brief This function cleans up reorder tbl for specific station
++ *
++ *  @param priv    	A pointer to mlan_private
++ *  @param ta      ta to find in reordering table
++ *  @return 	   	N/A
++ */
++void
++wlan_cleanup_reorder_tbl(mlan_private * priv, t_u8 * ta)
++{
++    RxReorderTbl *rx_reor_tbl_ptr = MNULL;
++    t_u8 i;
++    ENTER();
++    for (i = 0; i < MAX_NUM_TID; ++i) {
++        if ((rx_reor_tbl_ptr = wlan_11n_get_rxreorder_tbl(priv, i, ta))) {
++            wlan_11n_delete_rxreorder_tbl_entry(priv, rx_reor_tbl_ptr);
++        }
++    }
++    LEAVE();
++    return;
++}
++
++
++/**
++ *  @brief This function will set force_no_drop flag in rxreorder_tbl.
++ *
+  *  @param priv    A pointer to mlan_private
++ *  @param flag    MTRUE/MFALSE
++ *
++ *  @return	 N/A
+  */
+-t_void
+-wlan_send_delba_to_all_in_reorder_tbl(pmlan_private priv)
++void
++wlan_set_rxreorder_tbl_no_drop_flag(mlan_private * priv, t_u8 flag)
+ {
+     RxReorderTbl *rx_reor_tbl_ptr;
+ 
+@@ -1041,33 +1089,35 @@
+     }
+ 
+     while (rx_reor_tbl_ptr != (RxReorderTbl *) & priv->rx_reorder_tbl_ptr) {
+-        if (rx_reor_tbl_ptr->ba_status == BA_STREAM_SETUP_COMPLETE) {
+-            rx_reor_tbl_ptr->ba_status = BA_STREAM_SETUP_INPROGRESS;
+-            wlan_send_delba(priv, rx_reor_tbl_ptr->tid, rx_reor_tbl_ptr->ta, 0);
+-        }
++        if (flag)
++            rx_reor_tbl_ptr->flags |= RXREOR_FORCE_NO_DROP;
++        else
++            rx_reor_tbl_ptr->flags &= RXREOR_FORCE_NO_DROP;
+         rx_reor_tbl_ptr = rx_reor_tbl_ptr->pnext;
+     }
++
+     LEAVE();
++    return;
+ }
+ 
++
+ /**
+- *  @brief This function cleans up reorder tbl for specific station
+- *  
+- *  @param priv    	A pointer to mlan_private
+- *  @param ta      ta to find in reordering table        
+- *  @return 	   	N/A
++ *  @brief This function update all the rx_reorder_tbl's force_no_drop flag
++ *
++ *  @param pmadapter   	A pointer to mlan_adapter
++ *  @param flag		    MTRUE/MFALSE
++ *  @return 	        N/A
+  */
+ void
+-wlan_cleanup_reorder_tbl(mlan_private * priv, t_u8 * ta)
++wlan_update_rxreorder_tbl(pmlan_adapter pmadapter, t_u8 flag)
+ {
+-    RxReorderTbl *rx_reor_tbl_ptr = MNULL;
+     t_u8 i;
+-    ENTER();
+-    for (i = 0; i < MAX_NUM_TID; ++i) {
+-        if ((rx_reor_tbl_ptr = wlan_11n_get_rxreorder_tbl(priv, i, ta))) {
+-            wlan_11n_delete_rxreorder_tbl_entry(priv, rx_reor_tbl_ptr);
++    pmlan_private priv = MNULL;
++    for (i = 0; i < pmadapter->priv_num; i++) {
++        if (pmadapter->priv[i]) {
++            priv = pmadapter->priv[i];
++            wlan_set_rxreorder_tbl_no_drop_flag(priv, flag);
+         }
+     }
+-    LEAVE();
+     return;
+ }
+Index: a/drivers/net/wireless/marvell/w8782/mlan/mlan_11n_rxreorder.h
+===================================================================
+--- a/drivers/net/wireless/marvell/w8782/mlan/mlan_11n_rxreorder.h	(revision 129896)
++++ b/drivers/net/wireless/marvell/w8782/mlan/mlan_11n_rxreorder.h	(working copy)
+@@ -5,7 +5,7 @@
+  *
+  *  (C) Copyright 2011 Marvell International Ltd.
+  *  All Rights Reserved
+- * 
++ *
+  *  MARVELL CONFIDENTIAL
+  *  Copyright 2008 ~ 2011 Marvell International Ltd All Rights Reserved.
+  *  The source code contained or described herein and all documents related to
+@@ -17,7 +17,7 @@
+  *  laws and treaty provisions. No part of the Material may be used, copied,
+  *  reproduced, modified, published, uploaded, posted, transmitted, distributed,
+  *  or disclosed in any way without Marvell's prior express written permission.
+- * 
++ *
+  *  No license under any patent, copyright, trade secret or other intellectual
+  *  property right is granted to or conferred upon you by disclosure or delivery
+  *  of the Materials, either expressly, by implication, inducement, estoppel or
+@@ -81,6 +81,11 @@
+ /** Indicate packet has been dropped in FW */
+ #define RX_PKT_DROPPED_IN_FW             0xffffffff
+ 
++enum mlan_rxreor_flags {
++         RXREOR_FORCE_NO_DROP            = 1<<0,
++         RXREOR_INIT_WINDOW_SHIFT        = 1<<1,
++};
++
+ mlan_status mlan_11n_rxreorder_pkt(void *priv, t_u16 seqNum, t_u16 tid,
+                                    t_u8 * ta, t_u8 pkttype, void *payload);
+ void mlan_11n_delete_bastream_tbl(mlan_private * priv, int Tid,
+@@ -101,8 +106,7 @@
+                                          t_u8 * ta);
+ void wlan_11n_rxba_sync_event(mlan_private * priv, t_u8 * event_buf, t_u16 len);
+ 
+-/** send delba for all entries in reorder_tbl */
+-t_void wlan_send_delba_to_all_in_reorder_tbl(pmlan_private priv);
++void wlan_update_rxreorder_tbl(pmlan_adapter pmadapter, t_u8 flag);
+ 
+ /** clean up reorder_tbl */
+ void wlan_cleanup_reorder_tbl(mlan_private * priv, t_u8 * ta);
+Index: a/drivers/net/wireless/marvell/w8782/mlan/mlan_cmdevt.c
+===================================================================
+--- a/drivers/net/wireless/marvell/w8782/mlan/mlan_cmdevt.c	(revision 129896)
++++ b/drivers/net/wireless/marvell/w8782/mlan/mlan_cmdevt.c	(working copy)
+@@ -1619,6 +1619,7 @@
+ 
+     if (activated) {
+         if (priv->adapter->is_hs_configured) {
++            wlan_update_rxreorder_tbl(priv->adapter, MTRUE);
+             priv->adapter->hs_activated = MTRUE;
+             PRINTM(MEVENT, "hs_activated\n");
+             wlan_recv_event(priv, MLAN_EVENT_ID_DRV_HS_ACTIVATED, MNULL);
+Index: a/drivers/net/wireless/marvell/w8782/mlan/mlan_main.h
+===================================================================
+--- a/drivers/net/wireless/marvell/w8782/mlan/mlan_main.h	(revision 129896)
++++ b/drivers/net/wireless/marvell/w8782/mlan/mlan_main.h	(working copy)
+@@ -1045,6 +1045,7 @@
+     t_u8 ta[MLAN_MAC_ADDR_LENGTH];
+     /** Start window */
+     int start_win;
++    int init_win;
+     /** Window size */
+     int win_size;
+     /** Pointer to pointer to RxReorderTbl */
+@@ -1053,6 +1054,7 @@
+     reorder_tmr_cnxt_t timer_context;
+     /** BA stream status */
+     baStatus_e ba_status;
++    t_u8 flags;
+ };
+ 
+ /** BSS priority node */

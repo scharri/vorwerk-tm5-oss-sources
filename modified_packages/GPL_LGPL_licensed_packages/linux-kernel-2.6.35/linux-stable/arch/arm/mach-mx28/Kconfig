@@ -1,0 +1,40 @@
+choice
+	prompt "Select i.MXS board type"
+
+config MACH_MX28EVK
+	bool "Freescale MX28 EVK board"
+	depends on ARCH_MX28
+	select USB_ARCH_HAS_EHCI
+
+endchoice
+
+config MXS_UNIQUE_ID
+        bool "Support for UniqueID on boot media"
+        default y
+
+config MXS_UNIQUE_ID_OTP
+        bool "UniqueID on OTP"
+        depends on MXS_UNIQUE_ID
+        default y
+
+config VECTORS_PHY_ADDR
+	int "vectors address"
+	default 0
+	help
+	  This config set vectors table is located which physical address
+
+config MXS_TIMER_WITH_MACH
+	bool "System Timer support Compare Match interrupt"
+	default y
+
+config MEM_mDDR
+	bool "Memory type is mDDR"
+	depends on ARCH_MX28
+	help
+	  Say Y to select mDDR memory
+
+config WORKAROUND_ARCUSB_REG_RW
+        bool "work around mx28 arch register write for USB"
+        help
+           MX28 require read ARC register before write. Use SWP intructure to
+           implement this requirement.

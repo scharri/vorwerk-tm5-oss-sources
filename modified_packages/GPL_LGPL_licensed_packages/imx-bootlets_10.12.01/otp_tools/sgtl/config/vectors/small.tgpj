@@ -1,0 +1,34 @@
+#!gbuild
+
+<!-- object definitions -->
+<project name="example"><description>
+Sample project with embedded configurations.
+</description></project>
+
+<config name="MMC" default="yes"/>
+<config name="ETM"/>
+<config name="DEBUG"/>
+<define name="not_debug">!DEBUG</define>
+
+<require>
+	<description>ETM can only be used when in debug mode</description>
+	!ETM || (ETM ^^ not_debug)
+</require>
+
+<!-- project contents starts here -->
+macro TARGET=target
+[Project]
+	-thumb
+	-thumb-lib
+<DEBUG>
+	-G
+	-Onone
+</DEBUG>
+<not_debug>	-gs</not_debug>
+<ETM>	-DBUILD_FOR_ETM</ETM>
+player.gpj		[Project]
+<MMC>
+	-DPLAYER_MMC
+</MMC>
+hostlink.gpj		[Project]
+updater.gpj		[Project]

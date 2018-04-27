@@ -1,0 +1,58 @@
+HW_ICOLL_VECTOR_REG_ADDR         equ  0x80000000
+
+	.file	"icoll_dispatch.arm"
+	.text
+        .nothumb
+        .align 4
+
+    .global ICOLL_ASMHandler
+#ifdef NESTED_INTERRUPTS
+
+ICOLL_ASMHandler
+    sub     lr, lr, #4          ;Update the return address up front
+    STMFD   sp!, {lr}           ;store off the lr
+    mrs     r14,SPSR            ;          the old SPSR
+    stmfd   SP!, {r0-r3,r12,r14}    ;          and a temporary register
+                            
+    MRS     r14,CPSR            ;switch to system mode, with interrupts not enabled
+    orr     r14,r14,#0x9f
+    MSR     CPSR_c,r14                         
+                                
+    mov     r0,ICOLL_Handler    ;load the address of the C dispatcher call handler
+    blx     r0                  ;Call the handler function
+
+    MRS     r14,cpsr            ;switch back to original mode 
+    bic     r14,r14,0x1f        ;with interrupts turned off
+#if defined(_SIMULATOR)
+    orr     r14,r14,0x9b        ;(UND mode)
+#else
+    orr     r14,r14,0x92        ;(IRQ mode)
+#endif
+    msr     cpsr_c,r14
+    
+    ldmfd   sp!,{r0-r3,r12,r14}     ;load up all the stuff saved when entering
+    MSR     SPSR,r14            ;restore SPSR to what it was when we entered the exception
+    ;shouldn't need these two lines
+    ldmfd   sp!,{r14}           ;pop off the LR
+    movs    pc,lr               ;copy LR to PC (return from interrupt)
+    ;this one should work fine
+    ;LDMFD   sp!,{PC}^           ;load up the return address and return from interupt.
+
+#else
+
+;This is the non-nested version of the interrupt handler
+ICOLL_ASMHandler
+    sub     lr, lr, #4          ;Update the return address up front
+    STMFD   sp!, {r0-r3,r12,lr}     ;store off the lr, and the local registers
+                            
+    mov     r0,ICOLL_Handler    ;load the address of the C dispatcher call handler
+    blx     r0                  ;Call the handler function
+
+    ldmfd   sp!,{r0-r3,r12,r14}     ;pop off the LR and the local registers
+    movs    pc,lr               ;copy LR to PC (return from interrupt)
+    ;this one should work fine
+    ;LDMFD   sp!,{PC}^           ;load up the return address and return from interupt.
+    .word  HW_ICOLL_VECTOR_REG_ADDR    
+#endif
+
+    

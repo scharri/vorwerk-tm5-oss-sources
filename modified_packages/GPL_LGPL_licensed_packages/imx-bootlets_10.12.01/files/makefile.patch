@@ -1,0 +1,30 @@
+diff -Naur a/chooser_prep/Makefile b/chooser_prep/Makefile
+--- a/chooser_prep/Makefile	2016-01-10 20:58:47.345591407 +0100
++++ b/chooser_prep/Makefile	2016-01-12 19:08:05.322978898 +0100
+@@ -42,7 +42,7 @@
+ 
+ chooser_prep: $(BOOT_LAYOUT) $(CORE_OBJS)
+ 	$(MAKE) -C ../rom_lib
+-	$(LD) -o $@ $(CORE_OBJS) $(LDFLAGS) ../rom_lib/romlib.a /opt/freescale/usr/local/gcc-4.4.4-glibc-2.11.1-multilib-1.0/arm-fsl-linux-gnueabi/lib/gcc/arm-fsl-linux-gnueabi/4.4.4/libgcc.a
++	$(LD) -o $@ $(CORE_OBJS) $(LDFLAGS) ../rom_lib/romlib.a $(shell dirname `$(CC) $(CFLAGS) -print-libgcc-file-name`)/libgcc.a
+ 
+ clean:
+ 	@echo Cleaning...
+diff -Naur a/rom_lib/Makefile b/rom_lib/Makefile
+--- a/rom_lib/Makefile	2016-01-12 19:09:49.713970346 +0100
++++ b/rom_lib/Makefile	2016-01-12 19:11:06.075964090 +0100
+@@ -20,7 +20,8 @@
+ OBJCOPY	= $(CROSS_COMPILE)objcopy
+ OBJDUMP	= $(CROSS_COMPILE)objdump
+ 
+-CFLAGS	= -g -Wall $(INCLUDEDIRS) -O -DTGT_MX28
++#CFLAGS	= -g -Wall $(INCLUDEDIRS) -O -DTGT_MX28
++CFLAGS	= -g -Wall $(INCLUDEDIRS) -O -DTGT_MX28 -O2 -march=armv5te
+ 
+ # Generic code
+ CORE_OBJS = $(SRCDIR)/common/persistent_bit.o \
+@@ -54,4 +55,3 @@
+ 	@echo Cleaning...
+ 	rm -f $(LIBNAME).a
+ 	rm -f $(CORE_OBJS)
+-

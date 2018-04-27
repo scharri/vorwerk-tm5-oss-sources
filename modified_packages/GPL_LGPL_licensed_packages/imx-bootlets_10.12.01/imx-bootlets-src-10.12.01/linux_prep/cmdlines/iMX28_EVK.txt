@@ -1,0 +1,4 @@
+console=ttyAM0,115200 ro gpmi ubi.mtd=1 rootfstype=squashfs root=254:0 lpj=1130496 vt.global_cursor_default=0 quiet
+console=ttyAM0,115200 ro gpmi ubi.mtd=1 rootfstype=squashfs root=254:0 lpj=1130496 vt.global_cursor_default=0
+noinitrd console=ttyAM0,115200 fec_mac=00:08:02:6B:A3:1A root=/dev/nfs nfsroot=10.193.100.213:/data/rootfs_home/rootfs_mx28 rw ip=dhcp rootwait gpmi
+noinitrd console=ttyAM0,115200 root=/dev/ram0 rdinit=/sbin/init fec_mac=00:08:02:6B:A3:1A gpmi

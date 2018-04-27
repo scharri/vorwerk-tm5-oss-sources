@@ -1,0 +1,18 @@
+config W8786U
+	tristate "Marvell 8786u USB WiFi"
+	depends on USB
+	select WIRELESS_EXT
+	select WEXT_PRIV
+	select WEXT_SPY
+	select WI2WI
+	---help---
+	  Help message of W8786U
+	  Selects WIRELESS_EXT, WEXT_PRIV and WEXT_SPY
+	  
+
+#13.11.2013/HG:
+config WI2WI
+	tristate
+	depends on W8786U
+	default m
+	

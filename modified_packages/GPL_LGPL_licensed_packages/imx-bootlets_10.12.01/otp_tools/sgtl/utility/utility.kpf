@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Komodo Project File - DO NOT EDIT -->
+<project id="26578849-9217-4651-9438-73BFCCE1FAED" kpf_version="4" name="utility.kpf">
+<file id="01A21CEC-D6C8-4CFE-AEBF-EFAAB4358C42" idref="26578849-9217-4651-9438-73BFCCE1FAED" name="stack.py" url="stack.py">
+</file>
+<file id="068CC304-15EC-43D7-9102-329B3770BC1D" idref="26578849-9217-4651-9438-73BFCCE1FAED" name="pythonCheck.py" url="pythonCheck.py">
+</file>
+<file id="1E232766-C68E-4119-A119-59A72DEA04F7" idref="26578849-9217-4651-9438-73BFCCE1FAED" name="utilitytests.py" url="utilitytests.py">
+</file>
+<file id="2B2DFC33-3872-4E68-A2B4-BD45F63D66B6" idref="26578849-9217-4651-9438-73BFCCE1FAED" name="misc.py" url="misc.py">
+</file>
+<file id="55355111-7AA1-42FC-AEDE-5AA9C4E33B9A" idref="26578849-9217-4651-9438-73BFCCE1FAED" name="__init__.py" url="__init__.py">
+</file>
+<file id="5a2cf424-feed-4425-9dcd-625060d0c747" idref="26578849-9217-4651-9438-73BFCCE1FAED" name="procmon.py" url="procmon.py">
+</file>
+<file id="977FCA03-DA30-444C-98B5-154DBEAA684E" idref="26578849-9217-4651-9438-73BFCCE1FAED" name="filetools.py" url="filetools.py">
+</file>
+<file id="992E25E0-83BA-4BBE-B844-40F07EE4888A" idref="26578849-9217-4651-9438-73BFCCE1FAED" name="getch.py" url="getch.py">
+</file>
+<file id="AA2A5FCD-B5F1-4050-82C0-0462E99BCE1F" idref="26578849-9217-4651-9438-73BFCCE1FAED" name="bufferedstream.py" url="bufferedstream.py">
+</file>
+<file id="C3688017-5022-45F3-A3BB-F0AD0F87D73F" idref="26578849-9217-4651-9438-73BFCCE1FAED" name="wxCheck.py" url="wxCheck.py">
+</file>
+<preference-set idref="5a2cf424-feed-4425-9dcd-625060d0c747">
+<preference-set id="Invocations">
+<preference-set id="default">
+  <string id="cookieparams"></string>
+  <string id="cwd"></string>
+  <string id="documentRoot"></string>
+  <string id="executable-params"></string>
+  <string relative="path" id="filename">procmon.py</string>
+  <string id="getparams"></string>
+  <string id="language">Python</string>
+  <string id="mpostparams"></string>
+  <string id="params"></string>
+  <string id="postparams"></string>
+  <string id="posttype">application/x-www-form-urlencoded</string>
+  <string id="request-method">GET</string>
+  <boolean id="show-dialog">1</boolean>
+  <boolean id="sim-cgi">0</boolean>
+  <boolean id="use-console">0</boolean>
+  <string id="userCGIEnvironment"></string>
+  <string id="userEnvironment"></string>
+</preference-set>
+</preference-set>
+  <string id="lastInvocation">default</string>
+</preference-set>
+</project>

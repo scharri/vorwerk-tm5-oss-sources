@@ -1,0 +1,10 @@
+* Put limits to sessions
+* Export private keys to PKCS #8 format (can it be implemented?)
+* Documentation for functions
+* Is a writev() like interface needed?
+* Implement the NIST DSA generation algorithm.
+* Make key generation interruptible.
+* Allow assymetric keys to wrap other keys.
+* Tie keys to specific algorithms
+* Add support for AEAD ciphers
+* Add permissions to keys.

@@ -1,0 +1,59 @@
+options {
+	driveTag = 0x00;
+	flags = 0x01;
+}
+
+sources {
+	power_prep = "./updater/power_prep";
+	power_prep_bin = "./updater/power_prep.bin";
+	power_prep_hab_data = "./updater/power_prep_hab_data";
+
+	boot_prep = "./updater/boot_prep";
+	boot_prep_bin = "./updater/boot_prep.bin";
+	boot_prep_hab_data = "./updater/boot_prep_hab_data";
+
+	linux_prep = "./updater/linux_prep";
+	linux_prep_bin = "./updater/linux_prep.bin";
+	linux_prep_hab_data = "./updater/linux_prep_hab_data";
+	linux_kernel_hab_data = "./updater/linux_kernel_hab_data";
+
+	zImage = "./updater/zImage";
+	initramfs = "./updater/initramfs.cpio.gz";
+}
+
+section (0) {
+	//----------------------------------------------------------
+	// Power Supply initialization
+	//----------------------------------------------------------
+	load power_prep_bin > 0x10;
+	load power_prep;
+	load power_prep_hab_data > power_prep:__hab_data;
+	hab call power_prep:input_ivt;
+
+	//----------------------------------------------------------
+	// SDRAM initialization
+	//----------------------------------------------------------
+	load boot_prep_bin > 0x10;
+	load boot_prep;
+	load boot_prep_hab_data > boot_prep:__hab_data;
+	hab call boot_prep:input_ivt;
+
+	//----------------------------------------------------------
+	// Prepare to boot Linux
+	//----------------------------------------------------------
+	load linux_prep_bin > 0x2000;
+	load linux_prep;
+	load linux_prep_hab_data > linux_prep:__hab_data;
+	hab call linux_prep:input_ivt;
+
+	//----------------------------------------------------------
+	// Load and start Linux kernel
+	//----------------------------------------------------------
+	load zImage > 0x40008000;
+	// extern data in initramfs should be zero
+	load 0.b    > 0x40800000..0x40c00000;
+	load initramfs > 0x40800000;
+	//
+	load linux_kernel_hab_data > linux_prep:__hab_data;
+	hab jump linux_prep:input_ivt;
+}
